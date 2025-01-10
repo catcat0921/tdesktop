@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #pragma once
 
+#include "base/integration.h"
 #include "ui/style/style_core.h"
 
 #define DeclareReadSetting(Type, Name) extern Type g##Name; \
@@ -56,11 +57,15 @@ inline void cForceWorkingDir(const QString &newDir) {
 	}
 
 }
-DeclareReadSetting(QString, ExeName);
-DeclareReadSetting(QString, ExeDir);
+inline QString cExeName() {
+	return base::Integration::Instance().executableName();
+}
+inline QString cExeDir() {
+	return base::Integration::Instance().executableDir();
+}
 DeclareSetting(QString, DialogLastPath);
 DeclareSetting(QString, DialogHelperPath);
-inline const QString &cDialogHelperPathFinal() {
+inline QString cDialogHelperPathFinal() {
 	return cDialogHelperPath().isEmpty() ? cExeDir() : cDialogHelperPath();
 }
 
@@ -121,14 +126,6 @@ inline bool passcodeCanTry() {
 	return dt >= 30000;
 }
 
-inline float64 cRetinaFactor() {
-	return style::DevicePixelRatio();
-}
-
-inline int32 cIntRetinaFactor() {
-	return style::DevicePixelRatio();
-}
-
 inline int cEvalScale(int scale) {
 	return (scale == style::kScaleAuto) ? cScreenScale() : scale;
 }
@@ -155,7 +152,6 @@ DeclareSetting(EnhancedSetting, EnhancedOptions);
 DeclareSetting(int, NetRequestsCount);
 DeclareSetting(int, NetUploadSessionsCount);
 DeclareSetting(int, NetUploadRequestInterval);
-DeclareSetting(int, NetDownloadChunkSize);
 
 inline bool GetEnhancedBool(const QString& key) {
 	if (!gEnhancedOptions.contains(key)) {
@@ -194,14 +190,6 @@ inline void SetNetworkBoost(int boost) {
 	cSetNetRequestsCount(2 + (2 * GetEnhancedInt("net_speed_boost")));
 	cSetNetUploadSessionsCount(2 + (2 * GetEnhancedInt("net_speed_boost")));
 	cSetNetUploadRequestInterval(500 - (100 * GetEnhancedInt("net_speed_boost")));
-}
-
-inline void SetNetworkDLBoost(bool boost) {
-	if (boost) {
-		cSetNetDownloadChunkSize(1024 * 1024);
-	} else {
-		cSetNetDownloadChunkSize(128 * 1024);
-	}
 }
 
 inline bool blockExist(int64 id) {

@@ -25,12 +25,13 @@ namespace ChatHelpers {
 class TabbedSelector;
 
 extern const char kOptionTabbedPanelShowOnClick[];
+[[nodiscard]] bool ShowPanelOnClick();
 
 struct TabbedPanelDescriptor {
 	Window::SessionController *regularWindow = nullptr;
 	object_ptr<TabbedSelector> ownedSelector = { nullptr };
 	TabbedSelector *nonOwnedSelector = nullptr;
-};;
+};
 
 class TabbedPanel : public Ui::RpWidget {
 public:

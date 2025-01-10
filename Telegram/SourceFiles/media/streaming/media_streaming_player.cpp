@@ -544,8 +544,16 @@ void Player::play(const PlaybackOptions &options) {
 	if (!Media::Audio::SupportsSpeedControl()) {
 		_options.speed = 1.;
 	}
+	if (!_options.seekable) {
+		_options.position = 0;
+	}
 	_stage = Stage::Initializing;
-	_file->start(delegate(), _options.position, _options.hwAllowed);
+	_file->start(delegate(), {
+		.position = _options.position,
+		.durationOverride = options.durationOverride,
+		.seekable = _options.seekable,
+		.hwAllow = _options.hwAllowed,
+	});
 }
 
 void Player::savePreviousReceivedTill(
@@ -706,6 +714,10 @@ void Player::start() {
 
 	_stage = Stage::Started;
 	const auto guard = base::make_weak(&_sessionGuard);
+
+	_file->speedEstimate() | rpl::start_with_next([=](SpeedEstimate value) {
+		_updates.fire({ value });
+	}, _sessionLifetime);
 
 	rpl::merge(
 		_audio ? _audio->waitingForData() : nullptr,
@@ -873,6 +885,10 @@ rpl::producer<bool> Player::fullInCache() const {
 	return _fullInCache.events();
 }
 
+int64 Player::fileSize() const {
+	return _file->size();
+}
+
 QSize Player::videoSize() const {
 	return _information.video.size;
 }
@@ -946,11 +962,13 @@ Media::Player::TrackState Player::prepareLegacyState() const {
 
 	if (result.length == kTimeUnknown) {
 		const auto document = _options.audioId.audio();
-		const auto duration = document ? document->getDuration() : 0;
+		const auto duration = document ? document->duration() : 0;
 		if (duration > 0) {
-			result.length = duration * crl::time(1000);
+			result.length = duration;
 		} else {
-			result.length = std::max(crl::time(result.position), crl::time(0));
+			result.length = std::max(
+				crl::time(result.position),
+				crl::time(0));
 		}
 	}
 	return result;

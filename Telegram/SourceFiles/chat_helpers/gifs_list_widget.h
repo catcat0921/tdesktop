@@ -14,6 +14,10 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <QtCore/QTimer>
 
+namespace style {
+struct ComposeIcons;
+} // namespace style
+
 namespace Api {
 struct SendOptions;
 } // namespace Api
@@ -36,7 +40,7 @@ class SessionController;
 } // namespace Window
 
 namespace SendMenu {
-enum class Type;
+struct Details;
 } // namespace SendMenu
 
 namespace Data {
@@ -48,7 +52,8 @@ namespace ChatHelpers {
 void AddGifAction(
 	Fn<void(QString, Fn<void()> &&, const style::icon*)> callback,
 	std::shared_ptr<Show> show,
-	not_null<DocumentData*> document);
+	not_null<DocumentData*> document,
+	const style::ComposeIcons *iconsOverride = nullptr);
 
 class StickersListFooter;
 struct StickerIcon;
@@ -97,7 +102,7 @@ public:
 	rpl::producer<> cancelRequests() const;
 
 	base::unique_qptr<Ui::PopupMenu> fillContextMenu(
-		SendMenu::Type type) override;
+		const SendMenu::Details &details) override;
 
 	~GifsListWidget();
 
@@ -167,7 +172,8 @@ private:
 	void selectInlineResult(
 		int index,
 		Api::SendOptions options,
-		bool forceSend = false);
+		bool forceSend = false,
+		TextWithTags caption = {});
 
 	const std::shared_ptr<Show> _show;
 	std::unique_ptr<Ui::TabbedSearch> _search;

@@ -18,7 +18,7 @@ QByteArray gAlphaPrivateKey;
 
 bool gManyInstance = false;
 QString gKeyFile;
-QString gWorkingDir, gExeDir, gExeName;
+QString gWorkingDir;
 
 QStringList gSendPaths;
 QString gStartUrl;
@@ -73,5 +73,4 @@ EnhancedSetting gEnhancedOptions;
 int gNetRequestsCount = 2;
 int gNetUploadSessionsCount = 2;
 int gNetUploadRequestInterval = 500;
-int gNetDownloadChunkSize = 128 * 1024;
 int gAlwaysDeleteFor = 0;

@@ -20,6 +20,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "calls/calls_instance.h"
 #include "core/application.h"
 #include "styles/style_chat.h"
+#include "styles/style_chat_helpers.h"
 
 namespace HistoryView {
 
@@ -37,13 +38,14 @@ void GenerateUserpicsInRow(
 	const auto single = st.size;
 	const auto shift = st.shift;
 	const auto width = single + (limit - 1) * (single - shift);
-	if (result.width() != width * cIntRetinaFactor()) {
+	const auto ratio = style::DevicePixelRatio();
+	if (result.width() != width * ratio) {
 		result = QImage(
-			QSize(width, single) * cIntRetinaFactor(),
+			QSize(width, single) * ratio,
 			QImage::Format_ARGB32_Premultiplied);
 	}
 	result.fill(Qt::transparent);
-	result.setDevicePixelRatio(cRetinaFactor());
+	result.setDevicePixelRatio(ratio);
 
 	auto q = Painter(&result);
 	auto hq = PainterHighQualityEnabler(q);
@@ -53,7 +55,7 @@ void GenerateUserpicsInRow(
 	for (auto i = count; i != 0;) {
 		auto &entry = list[--i];
 		q.setCompositionMode(QPainter::CompositionMode_SourceOver);
-		entry.peer->paintUserpic(q, entry.view, x, 0, single);
+		entry.peer->paintUserpic(q, entry.view, x, 0, single, true);
 		entry.uniqueKey = entry.peer->userpicUniqueKey(entry.view);
 		q.setCompositionMode(QPainter::CompositionMode_Source);
 		q.setBrush(Qt::NoBrush);
@@ -141,7 +143,8 @@ rpl::producer<Ui::GroupCallBarContent> GroupCallBarContentByCall(
 		state->someUserpicsNotLoaded = false;
 		for (auto &userpic : state->userpics) {
 			userpic.peer->loadUserpic();
-			auto image = userpic.peer->generateUserpicImage(
+			auto image = PeerData::GenerateUserpicImage(
+				userpic.peer,
 				userpic.view,
 				userpicSize * style::DevicePixelRatio());
 			userpic.uniqueKey = userpic.peer->userpicUniqueKey(userpic.view);

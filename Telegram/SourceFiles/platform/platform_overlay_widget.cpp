@@ -9,7 +9,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "ui/effects/animations.h"
 #include "ui/platform/ui_platform_window_title.h"
-#include "ui/platform/ui_platform_utility.h"
 #include "ui/widgets/rp_window.h"
 #include "ui/abstract_button.h"
 #include "styles/style_media_view.h"
@@ -51,7 +50,6 @@ public:
 	void updateState(
 		bool active,
 		bool maximized,
-		bool topState,
 		const style::WindowTitle &st) override;
 	void notifySynteticOver(Control control, bool over) override;
 
@@ -101,7 +99,6 @@ object_ptr<Ui::AbstractButton> DefaultOverlayWidgetHelper::Buttons::create(
 
 	const auto icon = [&] {
 		switch (control) {
-		case Control::OnTop: return &st::mediaviewTitleMinimize;
 		case Control::Minimize: return &st::mediaviewTitleMinimize;
 		case Control::Maximize: return &st::mediaviewTitleMaximize;
 		case Control::Close: return &st::mediaviewTitleClose;
@@ -170,7 +167,6 @@ object_ptr<Ui::AbstractButton> DefaultOverlayWidgetHelper::Buttons::create(
 void DefaultOverlayWidgetHelper::Buttons::updateState(
 		bool active,
 		bool maximized,
-		bool topState,
 		const style::WindowTitle &st) {
 	_maximized = maximized;
 }
@@ -219,7 +215,8 @@ void DefaultOverlayWidgetHelper::orderWidgets() {
 }
 
 bool DefaultOverlayWidgetHelper::skipTitleHitTest(QPoint position) {
-	return _controls->controls.geometry().contains(position);
+	using namespace Ui::Platform;
+	return _controls->controls.hitTest(position) != HitTestResult::None;
 }
 
 rpl::producer<> DefaultOverlayWidgetHelper::controlsActivations() {
@@ -227,20 +224,9 @@ rpl::producer<> DefaultOverlayWidgetHelper::controlsActivations() {
 }
 
 rpl::producer<bool> DefaultOverlayWidgetHelper::controlsSideRightValue() {
-	using namespace Ui::Platform;
-
-	return TitleControlsLayoutValue(
-	) | rpl::map([=](const TitleControls::Layout &layout) {
-		// See TitleControls::updateControlsPosition.
-		if (ranges::contains(layout.left, TitleControl::Close)) {
-			return false;
-		} else if (ranges::contains(layout.right, TitleControl::Close)) {
-			return true;
-		} else if (layout.left.size() > layout.right.size()) {
-			return false;
-		} else {
-			return true;
-		}
+	return _controls->controls.layout().value(
+	) | rpl::map([=](const auto &layout) {
+		return !layout.onLeft();
 	}) | rpl::distinct_until_changed();
 }
 

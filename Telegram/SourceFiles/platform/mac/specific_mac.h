@@ -31,6 +31,10 @@ inline bool SkipTaskbarSupported() {
 	return false;
 }
 
+inline bool RunInBackground() {
+	return true;
+}
+
 void ActivateThisProcess();
 
 inline uint64 ActivationWindowId(not_null<QWidget*> window) {
@@ -40,12 +44,13 @@ inline uint64 ActivationWindowId(not_null<QWidget*> window) {
 inline void ActivateOtherProcess(uint64 processId, uint64 windowId) {
 }
 
+inline QString ExecutablePathForShortcuts() {
+	return cExeDir() + cExeName();
+}
+
 namespace ThirdParty {
 
 inline void start() {
-}
-
-inline void finish() {
 }
 
 } // namespace ThirdParty

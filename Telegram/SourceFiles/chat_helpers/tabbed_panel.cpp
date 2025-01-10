@@ -33,6 +33,10 @@ base::options::toggle TabbedPanelShowOnClick({
 
 const char kOptionTabbedPanelShowOnClick[] = "tabbed-panel-show-on-click";
 
+bool ShowPanelOnClick() {
+	return TabbedPanelShowOnClick.value();
+}
+
 TabbedPanel::TabbedPanel(
 	QWidget *parent,
 	not_null<Window::SessionController*> controller,
@@ -240,7 +244,7 @@ void TabbedPanel::paintEvent(QPaintEvent *e) {
 		hideFinished();
 	} else {
 		if (!_cache.isNull()) _cache = QPixmap();
-		Ui::Shadow::paint(p, innerRect(), width(), st::emojiPanAnimation.shadow);
+		Ui::Shadow::paint(p, innerRect(), width(), _selector->st().showAnimation.shadow);
 	}
 }
 
@@ -362,9 +366,17 @@ void TabbedPanel::startShowAnimation() {
 	if (!_a_show.animating()) {
 		auto image = grabForAnimation();
 
-		_showAnimation = std::make_unique<Ui::PanelAnimation>(st::emojiPanAnimation, _dropDown ? Ui::PanelAnimation::Origin::TopRight : Ui::PanelAnimation::Origin::BottomRight);
+		_showAnimation = std::make_unique<Ui::PanelAnimation>(
+			_selector->st().showAnimation,
+			(_dropDown
+				? Ui::PanelAnimation::Origin::TopRight
+				: Ui::PanelAnimation::Origin::BottomRight));
 		auto inner = rect().marginsRemoved(st::emojiPanMargins);
-		_showAnimation->setFinalImage(std::move(image), QRect(inner.topLeft() * cIntRetinaFactor(), inner.size() * cIntRetinaFactor()));
+		_showAnimation->setFinalImage(
+			std::move(image),
+			QRect(
+				inner.topLeft() * style::DevicePixelRatio(),
+				inner.size() * style::DevicePixelRatio()));
 		_showAnimation->setCornerMasks(Images::CornersMask(st::emojiPanRadius));
 		_showAnimation->start();
 	}
@@ -382,9 +394,9 @@ QImage TabbedPanel::grabForAnimation() {
 	Ui::SendPendingMoveResizeEvents(this);
 
 	auto result = QImage(
-		size() * cIntRetinaFactor(),
+		size() * style::DevicePixelRatio(),
 		QImage::Format_ARGB32_Premultiplied);
-	result.setDevicePixelRatio(cRetinaFactor());
+	result.setDevicePixelRatio(style::DevicePixelRatio());
 	result.fill(Qt::transparent);
 	if (_selector) {
 		QPainter p(&result);

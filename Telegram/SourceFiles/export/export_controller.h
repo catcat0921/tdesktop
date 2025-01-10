@@ -38,25 +38,17 @@ struct ProcessingState {
 		DialogsList,
 		PersonalInfo,
 		Userpics,
+		Stories,
 		Contacts,
 		Sessions,
 		OtherData,
 		Dialogs,
 	};
-	enum class FileType {
-		None,
-		Photo,
-		Video,
-		VoiceMessage,
-		VideoMessage,
-		Sticker,
-		GIF,
-		File,
-	};
 	enum class EntityType {
 		Chat,
 		SavedMessages,
 		RepliesMessages,
+		VerifyCodes,
 		Other,
 	};
 
@@ -75,7 +67,6 @@ struct ProcessingState {
 	int itemCount = 0;
 
 	uint64 bytesRandomId = 0;
-	FileType bytesType = FileType::None;
 	QString bytesName;
 	int64 bytesLoaded = 0;
 	int64 bytesCount = 0;
