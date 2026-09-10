@@ -84,6 +84,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/screen_reader_mode.h"
 #include "storage/storage_domain.h"
 #include "storage/storage_databases.h"
+#include "storage/storage_folder_archive.h"
 #include "storage/localstorage.h"
 #include "payments/payments_checkout_process.h"
 #include "export/export_manager.h"
@@ -350,6 +351,7 @@ void Application::run() {
 	startSystemDarkModeViewer();
 	Media::Player::start(_audio.get());
 	Media::Encode::ClearStaleTempFiles();
+	Storage::ClearStaleArchiveFiles();
 
 	if (MediaControlsManager::Supported()) {
 		_mediaControlsManager = std::make_unique<MediaControlsManager>();
@@ -1482,7 +1484,7 @@ Window::Controller *Application::separateWindowFor(
 	return nullptr;
 }
 
-Window::Controller *Application::ensureSeparateWindowFor(
+not_null<Window::Controller*> Application::ensureSeparateWindowFor(
 		Window::SeparateId id,
 		MsgId showAtMsgId) {
 	const auto activate = [&](not_null<Window::Controller*> window) {
@@ -1500,6 +1502,8 @@ Window::Controller *Application::ensureSeparateWindowFor(
 		}
 		return activate(existing);
 	}
+
+	Assert(Window::CanShowSeparateWindow(id));
 
 	const auto result = _windows.emplace(
 		id,
