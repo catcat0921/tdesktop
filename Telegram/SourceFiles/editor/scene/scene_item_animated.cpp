@@ -10,6 +10,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/painter.h"
 #include <QtMath>
 
+#include <QtMath>
+
 namespace Editor {
 
 Media::Encode::AnimatedEntity ItemAnimated::animatedEntity(
